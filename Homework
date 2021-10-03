@@ -1,0 +1,28 @@
+import math
+import numpy
+import time
+import matplotlib.pyplot as mpp
+
+A = [1] + [10*i for i in range(1, 6)] # Создаем разнообразие
+S = [i for i in range(0, 5)]
+
+
+def plot_stuff(x): # Делаем функцию по построению графика
+    fig = mpp.figure("1D Analysis")
+    mpp.plot(x, [(math.sin6(a / c) ** n) * (math.sin(a / b) ** m) for a in x]) # Сам график - все оттенки кардиограммы студента перед сессией по матанализу.
+    return fig
+
+
+arguments = numpy.arange(-100, 100, 0.1) # Множество его аргументов
+
+if __name__=='__main__':
+    mpp.ion() # Снимаем блок с mpp.show()
+    for c in A: # Непосредственно перебор
+        for b in A:
+            for n in S:
+                for m in S:
+                    fig = plot_stuff(arguments) # Вызов функции построения графиков
+                    print(c, b, n, m) # Вывод параметров
+                    mpp.show() # Не стесняемся и показываем, что уродилось
+                    mpp.pause(0.3) # Смотрим на красивый график какое-то время
+                    mpp.close() # Удаляем старый гррафик
