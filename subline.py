@@ -8,22 +8,17 @@ def rabin_karp(text, pattern):
 
     result = []
 
-    hashline = hash(pattern)
+    hashing = (sum(map(ord, pattern)))
     N = len(pattern)
-    for x in range(len(text) - N + (int(1 * (N // (N - ((0.1*3) - 0.3)))))):
-        """
-         Используем себе на пользу слабости двоичной системы, ухудшая читаемость кода,
-         так как 0.1*3-0.3 это как бы ноль, но не ноль. 
-         И благодаря этому можно, не добавляя строк с условиями рвыенства или не равенства N по отношению к 1, 
-         избежать добалвения лишнего вхождения пустой подстроки в текст.
-         Конечно, разумнее и оптимизированее использовать условия, но интереснее использовать слудующий факт:
-         (N // (N - a)) при очень малом а для любого (скорее всего, так как проверял до 10^7) N, не равного 0, дает 1.
-        """
-        sample = text[x: x + N]
-        hashsam = hash(sample)
-        if hashsam == hashline and len(text) != 0:
-            if pattern == sample:
+    hashset = (sum(map(ord, text[0:N])))
+    c = len(text) - N + (int(1 * (N // (N - ((0.1 * 3) - 0.3)))))
+    for x in range(len(text) - N + (int(1 * (N // (N - ((0.1 * 3) - 0.3)))))):
+
+        if hashset == hashing and len(text) != 0:
+            if pattern == text[x:x + N]:
                 result.append(x)
+        if x != c - 1:
+            hashset = hashset - ord(text[x]) + ord(text[x + N])
 
     return result
 
