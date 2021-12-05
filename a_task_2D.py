@@ -11,7 +11,24 @@ MODEL_G = 0.5  # гравитационная постоянная
 COLLISION_DISTANCE = 5.0
 COLLISION_COEFFICIENT = 50.0
 MODEL_DELTA_T = 0.01
-TIME_TO_MODEL = 800
+TIME_TO_MODEL = 100
+
+
+# Тут все интересные значения.
+N = 3  # Количество тел
+
+X = 0  # Смещение по координатам
+Y = 0
+
+CORDS = [[0., 0.], [100., 0.], [0., 100.]]  # Начальные координаты
+VIR = [[0., 0.], [0., -10.], [15., 0.]]  # Скорость
+MM = [50000., 10., 10.]  # Массы слева направо
+
+k = 2.5  # Увеличение изображение
+SPEED = 15 # Скорость отображения орбит
+
+Z = 0  # Относительно какого тела строиьтся график
+
 
 
 # ABC это не алфавит, а AbstractBaseClass. Не даст создать экземпляр, пока не переопределишь все методы-заглушки
@@ -91,53 +108,102 @@ class Universe3D(Universe):
 
         if dist > self.collision_distance:
             # Ситуация с обычным потоком поля — просто притяжение
-            return self.G / dist ** 1
+            return self.G / dist ** 2
         else:
             # Отталкивание при соударении (притяжение убираем).
             # К гравитации не относится, т.к. имеет скорее электростатическую
             # природу, так что это sort of hack.
             # Никаких конкретных законов не реализует, просто нечто отрицательное =)
-            return -self.k / dist ** 2
+            return -self.k / dist ** (1/2)
 
 
 u = Universe3D(MODEL_G, COLLISION_COEFFICIENT, COLLISION_DISTANCE)
 # u = Universe3D(MODEL_G, 20, 4)
 
-X = 0
-Y = 0
-CORDS = [[0. - X,0. - Y], [100. - X, 0. - Y]]
-MM = [2000., 10.]
-N = 2
-bodies = [
-    MaterialPoint(u, MM[0], vec(CORDS[0]), vec([0., 0.])),
-    MaterialPoint(u, MM[1], vec(CORDS[1]), vec([0., -10.]))
-]
+
+bodies = []
+for d in range(N):
+    bodies.append(MaterialPoint(u, MM[d], vec(CORDS[d]), vec(VIR[d])))
 
 steps = int(TIME_TO_MODEL / MODEL_DELTA_T)
 for stepn in range(steps):
     u.model_step()
 
-win = turtle.Screen()
-win.tracer(2, 0)
+def plt_kepler(same_fig=False):
 
+    for b in bodies:
+        DS = []
+        f = b.ptrace
+        g = b.vtrace
+        for c in range(len(f)):
+            ds = abs(np.cross(f[c], g[c]))/2
+            DS.append(ds)
+        t = range(len(DS))
+        plt.plot(t, DS)
+
+        if not same_fig: # По картинке на тело
+            plt.show()
+    if same_fig: # Одна картинка на всех
+        plt.show()
+
+plt_kepler()
+plt_kepler(True)
+
+win = turtle.Screen()
+
+
+m = sum(MM[:N])
 M_P = []
 for i in range(N):
     m_point = turtle.Turtle()
     m_point.shape('circle')
     R = hex(randint(0, 255))[2:]
     m_point.pencolor('#'+'0'*(4 - len(R)) + R + 'ff')
-    m_point.turtlesize((MM[i] / 100000) ** (1/4))
+    m_point.turtlesize(k * (MM[i] / 10000000) ** (1/6))
     m_point.up()
-    m_point.goto(2 * CORDS[i][0],  2 * CORDS[i][1])
+    if Z != 0:
+        m_point.goto(k * (CORDS[i][0] - CORDS[Z - 1][0] - X), k * (CORDS[i][1] - CORDS[Z - 1][1] - Y))
+    elif Z == - 1:
+        RCX = 0
+        RCY = 0
+        for l in range(N):
+            RCX += MM[i] * CORDS[i][0]
+            RCY += MM[i] * CORDS[i][1]
+        RCX = RCX / m
+        RCY = RCY / m
+        m_point.goto(k * (CORDS[i][0] - RCX), k * (CORDS[i][1] - RCY))
+    else:
+        m_point.goto(k * (CORDS[i][0] - X), k * (CORDS[i][1] - Y))
     m_point.down()
     t = bodies[i].ptrace
     xs = [p[0] for p in t]
     ys = [p[1] for p in t]
     M_P.append([m_point, xs, ys])
 
+win.tracer(SPEED, 0)
 
+a = 0
+b = 0
 for i in range(len(M_P[0][1])):
+
     for s in range(N):
-        M_P[s][0].goto(2 * M_P[s][1][i], 2 * M_P[s][2][i])
+        if Z == 0:
+            pass
+        elif Z == -1:
+            RCX = 0
+            RCY = 0
+
+            for l in range(N):
+                RCX += MM[l] * M_P[l][1][i]
+                RCY += MM[l] * M_P[l][2][i]
+            RCX = RCX / m
+            RCY = RCY / m
+            a = RCX
+            b = RCY
+        else:
+            a = M_P[Z - 1][1][i]
+            b = M_P[Z - 1][2][i]
+        M_P[s][0].goto(k * (M_P[s][1][i] - a - X),k * (M_P[s][2][i] - b - Y))
+
 
 win.mainloop()
