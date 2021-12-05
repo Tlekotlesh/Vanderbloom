@@ -27,7 +27,7 @@ MM = [50000., 10., 10.]  # Массы слева направо
 k = 2.5  # Увеличение изображение
 SPEED = 15 # Скорость отображения орбит
 
-Z = 0  # Относительно какого тела строиьтся график
+Z = 0  # Относительно какого тела строиьтся график: если 1...N, то относително n-ого тела. Если -1, то относително центра масс, если 0, то относительно вселенского эфира (лабор. сис.)
 
 
 
@@ -152,7 +152,7 @@ plt_kepler(True)
 win = turtle.Screen()
 
 
-m = sum(MM[:N])
+m = sum(MM[:N + 1])
 M_P = []
 for i in range(N):
     m_point = turtle.Turtle()
@@ -161,14 +161,14 @@ for i in range(N):
     m_point.pencolor('#'+'0'*(4 - len(R)) + R + 'ff')
     m_point.turtlesize(k * (MM[i] / 10000000) ** (1/6))
     m_point.up()
-    if Z != 0:
+    if Z != 0 and Z != -1:
         m_point.goto(k * (CORDS[i][0] - CORDS[Z - 1][0] - X), k * (CORDS[i][1] - CORDS[Z - 1][1] - Y))
     elif Z == - 1:
         RCX = 0
         RCY = 0
         for l in range(N):
-            RCX += MM[i] * CORDS[i][0]
-            RCY += MM[i] * CORDS[i][1]
+            RCX += MM[l] * CORDS[l][0]
+            RCY += MM[l] * CORDS[l][1]
         RCX = RCX / m
         RCY = RCY / m
         m_point.goto(k * (CORDS[i][0] - RCX), k * (CORDS[i][1] - RCY))
@@ -200,6 +200,7 @@ for i in range(len(M_P[0][1])):
             RCY = RCY / m
             a = RCX
             b = RCY
+            print(a, b)
         else:
             a = M_P[Z - 1][1][i]
             b = M_P[Z - 1][2][i]
