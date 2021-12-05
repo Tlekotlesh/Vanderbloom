@@ -118,7 +118,7 @@ for stepn in range(steps):
     u.model_step()
 
 win = turtle.Screen()
-win.tracer(20)
+win.tracer(2, 0)
 
 M_P = []
 for i in range(N):
