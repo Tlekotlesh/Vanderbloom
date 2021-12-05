@@ -11,21 +11,21 @@ MODEL_G = 0.5  # гравитационная постоянная
 COLLISION_DISTANCE = 5.0
 COLLISION_COEFFICIENT = 50.0
 MODEL_DELTA_T = 0.01
-TIME_TO_MODEL = 100
+TIME_TO_MODEL = 500
 
 
 # Тут все интересные значения.
 N = 3  # Количество тел
 
-X = 0  # Смещение по координатам
+X = 500  # Смещение по координатам
 Y = 0
 
-CORDS = [[0., 0.], [100., 0.], [0., 100.]]  # Начальные координаты
-VIR = [[0., 0.], [0., -10.], [15., 0.]]  # Скорость
-MM = [50000., 10., 10.]  # Массы слева направо
+CORDS = [[0., 0.], [150., 0.], [0., 110.]]  # Начальные координаты
+VIR = [[0., 0.], [0., -20.], [25., 0.]]  # Скорость
+MM = [5000., 100., 1000.]  # Массы слева направо
 
-k = 2.5  # Увеличение изображение
-SPEED = 15 # Скорость отображения орбит
+k = 1  # Увеличение изображение
+SPEED = 5 # Скорость отображения орбит
 
 Z = 0  # Относительно какого тела строиьтся график
 
@@ -108,13 +108,13 @@ class Universe3D(Universe):
 
         if dist > self.collision_distance:
             # Ситуация с обычным потоком поля — просто притяжение
-            return self.G / dist ** 2
+            return self.G / dist ** 1
         else:
             # Отталкивание при соударении (притяжение убираем).
             # К гравитации не относится, т.к. имеет скорее электростатическую
             # природу, так что это sort of hack.
             # Никаких конкретных законов не реализует, просто нечто отрицательное =)
-            return -self.k / dist ** (1/2)
+            return -self.k / dist ** 2
 
 
 u = Universe3D(MODEL_G, COLLISION_COEFFICIENT, COLLISION_DISTANCE)
@@ -129,30 +129,11 @@ steps = int(TIME_TO_MODEL / MODEL_DELTA_T)
 for stepn in range(steps):
     u.model_step()
 
-def plt_kepler(same_fig=False):
-
-    for b in bodies:
-        DS = []
-        f = b.ptrace
-        g = b.vtrace
-        for c in range(len(f)):
-            ds = abs(np.cross(f[c], g[c]))/2
-            DS.append(ds)
-        t = range(len(DS))
-        plt.plot(t, DS)
-
-        if not same_fig: # По картинке на тело
-            plt.show()
-    if same_fig: # Одна картинка на всех
-        plt.show()
-
-plt_kepler()
-plt_kepler(True)
 
 win = turtle.Screen()
 
 
-m = sum(MM[:N])
+m = sum(MM[:N + 1])
 M_P = []
 for i in range(N):
     m_point = turtle.Turtle()
@@ -161,17 +142,17 @@ for i in range(N):
     m_point.pencolor('#'+'0'*(4 - len(R)) + R + 'ff')
     m_point.turtlesize(k * (MM[i] / 10000000) ** (1/6))
     m_point.up()
-    if Z != 0:
+    if Z != 0 and Z != -1:
         m_point.goto(k * (CORDS[i][0] - CORDS[Z - 1][0] - X), k * (CORDS[i][1] - CORDS[Z - 1][1] - Y))
     elif Z == - 1:
         RCX = 0
         RCY = 0
         for l in range(N):
-            RCX += MM[i] * CORDS[i][0]
-            RCY += MM[i] * CORDS[i][1]
+            RCX += MM[l] * CORDS[l][0]
+            RCY += MM[l] * CORDS[l][1]
         RCX = RCX / m
         RCY = RCY / m
-        m_point.goto(k * (CORDS[i][0] - RCX), k * (CORDS[i][1] - RCY))
+        m_point.goto(k * (CORDS[i][0] - RCX - X), k * (CORDS[i][1] - RCY - Y))
     else:
         m_point.goto(k * (CORDS[i][0] - X), k * (CORDS[i][1] - Y))
     m_point.down()
@@ -203,7 +184,7 @@ for i in range(len(M_P[0][1])):
         else:
             a = M_P[Z - 1][1][i]
             b = M_P[Z - 1][2][i]
-        M_P[s][0].goto(k * (M_P[s][1][i] - a - X),k * (M_P[s][2][i] - b - Y))
+        M_P[s][0].goto(k * (M_P[s][1][i] - a - X), k * (M_P[s][2][i] - b - Y))
 
 
 win.mainloop()
