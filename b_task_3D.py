@@ -11,7 +11,7 @@ MODEL_G = 0.5  # гравитационная постоянная
 COLLISION_DISTANCE = 5.0
 COLLISION_COEFFICIENT = 50.0
 MODEL_DELTA_T = 0.01
-TIME_TO_MODEL = 150
+TIME_TO_MODEL = 100
 
 
 # Тут все интересные значения.
@@ -25,9 +25,9 @@ VIR = [[0., 0.], [0., -10.], [15., 0.]]  # Скорость
 MM = [50000., 10., 10.]  # Массы слева направо
 
 k = 2.5  # Увеличение изображение
-SPEED = 10  # Скорость отображения орбит
+SPEED = 15 # Скорость отображения орбит
 
-Z = 0  # Относительно какого тела строиться график
+Z = 0  # Относительно какого тела строиьтся график
 
 
 
@@ -114,7 +114,7 @@ class Universe3D(Universe):
             # К гравитации не относится, т.к. имеет скорее электростатическую
             # природу, так что это sort of hack.
             # Никаких конкретных законов не реализует, просто нечто отрицательное =)
-            return -self.k / dist ** 1
+            return -self.k / dist ** (1/2)
 
 
 u = Universe3D(MODEL_G, COLLISION_COEFFICIENT, COLLISION_DISTANCE)
@@ -152,7 +152,7 @@ plt_kepler(True)
 win = turtle.Screen()
 
 
-
+m = sum(MM[:N])
 M_P = []
 for i in range(N):
     m_point = turtle.Turtle()
@@ -163,6 +163,15 @@ for i in range(N):
     m_point.up()
     if Z != 0:
         m_point.goto(k * (CORDS[i][0] - CORDS[Z - 1][0] - X), k * (CORDS[i][1] - CORDS[Z - 1][1] - Y))
+    elif Z == - 1:
+        RCX = 0
+        RCY = 0
+        for l in range(N):
+            RCX += MM[i] * CORDS[i][0]
+            RCY += MM[i] * CORDS[i][1]
+        RCX = RCX / m
+        RCY = RCY / m
+        m_point.goto(k * (CORDS[i][0] - RCX), k * (CORDS[i][1] - RCY))
     else:
         m_point.goto(k * (CORDS[i][0] - X), k * (CORDS[i][1] - Y))
     m_point.down()
@@ -180,6 +189,17 @@ for i in range(len(M_P[0][1])):
     for s in range(N):
         if Z == 0:
             pass
+        elif Z == -1:
+            RCX = 0
+            RCY = 0
+
+            for l in range(N):
+                RCX += MM[l] * M_P[l][1][i]
+                RCY += MM[l] * M_P[l][2][i]
+            RCX = RCX / m
+            RCY = RCY / m
+            a = RCX
+            b = RCY
         else:
             a = M_P[Z - 1][1][i]
             b = M_P[Z - 1][2][i]
