@@ -149,7 +149,7 @@ plt_kepler()
 plt_kepler(True)
 
 win = turtle.Screen()
-win.tracer(50)
+win.tracer(10, 0)
 
 M_P = []
 for i in range(N):
@@ -170,8 +170,6 @@ for i in range(N):
 for i in range(len(M_P[0][1])):
 
     for s in range(N):
-        win.update()
         M_P[s][0].goto(2 * M_P[s][1][i], 2 * M_P[s][2][i])
 
 win.mainloop()
-
