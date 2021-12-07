@@ -4,34 +4,34 @@ from numpy import array as vec
 import numpy.linalg
 import matplotlib.pyplot as plt
 import itertools
-from random import *
 import turtle
 
 MODEL_G = 0.5  # гравитационная постоянная
 COLLISION_DISTANCE = 5.0
 COLLISION_COEFFICIENT = 50.0
 MODEL_DELTA_T = 0.01
-TIME_TO_MODEL = 500
-
+TIME_TO_MODEL = 100
 
 # Тут все интересные значения.
 N = 3  # Количество тел
 
-X = 500  # Смещение по координатам
-Y = 0
+x = 500  # Смещение по координатам
+y = 0
 
-CORDS = [[0., 0.], [150., 0.], [0., 110.]]  # Начальные координаты
-VIR = [[0., 0.], [0., -20.], [25., 0.]]  # Скорость
-MM = [5000., 100., 1000.]  # Массы слева направо
+cords = [[0., 0.], [150., 0.], [0., 110.]]  # Начальные координаты
+vir = [[0., 0.], [0., -20.], [25., 0.]]  # Скорость
+all_mass = [5000., 100., 1000.]  # Массы слева направо
 
 k = 1  # Увеличение изображение
-SPEED = 5 # Скорость отображения орбит
+speed = 15  # Скорость отображения орбит
 
-Z = 0  # Относительно какого тела строиьтся график
+about = 0  # Относительно какого тела строиьтся график.
+# Если 0 - то относительно вселеннского эфира. -1 - относ.
+# центра масс. 1...n относ. тел.
 
 
-
-# ABC это не алфавит, а AbstractBaseClass. Не даст создать экземпляр, пока не переопределишь все методы-заглушки
+# ABC это не алфавит, а AbstractBaseClass. Не даст создать экземпляр,
+# пока не переопределишь все методы-заглушки
 class Universe(ABC):
     """Невнятная вселенная, основа всех миров"""
 
@@ -91,7 +91,7 @@ class MaterialPoint:
         self.velocity += force * MODEL_DELTA_T / self.mass
 
 
-class Universe3D(Universe):
+class Universe2D(Universe):
     def __init__(self,
                  G,  # гравитационная постоянная
                  k,  # коэффициент при упругом соударении
@@ -108,22 +108,20 @@ class Universe3D(Universe):
 
         if dist > self.collision_distance:
             # Ситуация с обычным потоком поля — просто притяжение
-            return self.G / dist ** 1
+            return self.G / dist
         else:
             # Отталкивание при соударении (притяжение убираем).
             # К гравитации не относится, т.к. имеет скорее электростатическую
             # природу, так что это sort of hack.
             # Никаких конкретных законов не реализует, просто нечто отрицательное =)
-            return -self.k / dist ** 2
+            return -self.k / dist ** (1 / 2)
 
 
-u = Universe3D(MODEL_G, COLLISION_COEFFICIENT, COLLISION_DISTANCE)
-# u = Universe3D(MODEL_G, 20, 4)
-
+u = Universe2D(MODEL_G, COLLISION_COEFFICIENT, COLLISION_DISTANCE)
 
 bodies = []
 for d in range(N):
-    bodies.append(MaterialPoint(u, MM[d], vec(CORDS[d]), vec(VIR[d])))
+    bodies.append(MaterialPoint(u, all_mass[d], vec(cords[d]), vec(vir[d])))
 
 steps = int(TIME_TO_MODEL / MODEL_DELTA_T)
 for stepn in range(steps):
@@ -132,59 +130,57 @@ for stepn in range(steps):
 
 win = turtle.Screen()
 
-
-m = sum(MM[:N + 1])
+m = sum(all_mass[:N + 1])
 M_P = []
 for i in range(N):
     m_point = turtle.Turtle()
     m_point.shape('circle')
-    R = hex(randint(0, 255))[2:]
-    m_point.pencolor('#'+'0'*(4 - len(R)) + R + 'ff')
-    m_point.turtlesize(k * (MM[i] / 10000000) ** (1/6))
+    color = hex(2)[2:]
+    m_point.pencolor('#' + '0' * (4 - len(color)) + color + 'ff')
+    m_point.turtlesize(k * (all_mass[i] / 10000000) ** (1 / 6))
     m_point.up()
-    if Z != 0 and Z != -1:
-        m_point.goto(k * (CORDS[i][0] - CORDS[Z - 1][0] - X), k * (CORDS[i][1] - CORDS[Z - 1][1] - Y))
-    elif Z == - 1:
-        RCX = 0
-        RCY = 0
-        for l in range(N):
-            RCX += MM[l] * CORDS[l][0]
-            RCY += MM[l] * CORDS[l][1]
-        RCX = RCX / m
-        RCY = RCY / m
-        m_point.goto(k * (CORDS[i][0] - RCX - X), k * (CORDS[i][1] - RCY - Y))
+    if about != 0 and about != -1:
+        m_point.goto(k * (cords[i][0] - cords[about - 1][0] - x), k * (cords[i][1] - cords[about - 1][1] - y))
+    elif about == - 1:
+        rcx = 0
+        rcy = 0
+        for io in range(N):
+            rcx += all_mass[io] * cords[io][0]
+            rcy += all_mass[io] * cords[io][1]
+        rcx = rcx / m
+        rcy = rcy / m
+        m_point.goto(k * (cords[i][0] - rcx - x), k * (cords[i][1] - rcy - y))
     else:
-        m_point.goto(k * (CORDS[i][0] - X), k * (CORDS[i][1] - Y))
+        m_point.goto(k * (cords[i][0] - x), k * (cords[i][1] - y))
     m_point.down()
     t = bodies[i].ptrace
     xs = [p[0] for p in t]
     ys = [p[1] for p in t]
     M_P.append([m_point, xs, ys])
 
-win.tracer(SPEED, 0)
+win.tracer(speed, 0)
 
 a = 0
 b = 0
 for i in range(len(M_P[0][1])):
 
     for s in range(N):
-        if Z == 0:
+        if about == 0:
             pass
-        elif Z == -1:
-            RCX = 0
-            RCY = 0
+        elif about == -1:
+            rcx = 0
+            rcy = 0
 
-            for l in range(N):
-                RCX += MM[l] * M_P[l][1][i]
-                RCY += MM[l] * M_P[l][2][i]
-            RCX = RCX / m
-            RCY = RCY / m
-            a = RCX
-            b = RCY
+            for io in range(N):
+                rcx += all_mass[io] * M_P[io][1][i]
+                rcy += all_mass[io] * M_P[io][2][i]
+            rcx = rcx / m
+            rcy = rcy / m
+            a = rcx
+            b = rcy
         else:
-            a = M_P[Z - 1][1][i]
-            b = M_P[Z - 1][2][i]
-        M_P[s][0].goto(k * (M_P[s][1][i] - a - X), k * (M_P[s][2][i] - b - Y))
-
+            a = M_P[about - 1][1][i]
+            b = M_P[about - 1][2][i]
+        M_P[s][0].goto(k * (M_P[s][1][i] - a - x), k * (M_P[s][2][i] - b - y))
 
 win.mainloop()
