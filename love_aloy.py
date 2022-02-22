@@ -18,7 +18,7 @@ def sigma(array, t, device, show_sigma = False, show_sudden = False):
     n = len(array)
     avr = sum(array) / n
     for i in range(n):
-        s += (array - avr)**2
+        s += (array[i] - avr)**2
     sigma_suddenly = (s / (n*(n - 1)))**(1/2)
     if show_sigma:
         print(sigma_suddenly)
