@@ -18,7 +18,7 @@ def sigma(array, t, device, show_sigma = False, show_sudden = False):
     n = len(array)
     avr = sum(array) / n
     for i in range(n):
-        s += (array - avr)**2
+        s += (array[i] - avr)**2
     sigma_suddenly = (s / (n*(n - 1)))**(1/2)
     if show_sigma:
         print(sigma_suddenly)
@@ -34,7 +34,10 @@ def sigma(array, t, device, show_sigma = False, show_sudden = False):
 # абсолютные погрешности (массив), их значения (сначала переменных затем констант массив).
 def indirect_error(function, const, variable, abs_error, args):
     row = list(map(Symbol, variable.split(" ")))
-    consts = list(map(Symbol, const.split(" ")))
+    if const != 'missing':
+        consts = list(map(Symbol, const.split(" ")))
+    else:
+        consts = []
     sympy_function = sympify(function)
     s = sympify('0')
     for i in prange(len(row)):
@@ -44,5 +47,5 @@ def indirect_error(function, const, variable, abs_error, args):
     time_array = row + consts
     for j in prange(len(time_array)):
         params[time_array[j]] = args[j]
-    ans = s.evalf(20, subs=params)
+    ans = (sympy_function.evalf(20, subs=params), s.evalf(20, subs=params))
     return ans
