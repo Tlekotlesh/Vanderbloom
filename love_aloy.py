@@ -1,5 +1,5 @@
-from sympy import Symbol, diff, sympify
-from numba import prange
+from sympy import Symbol, diff, sympify # type: ignore
+from numba import prange # type: ignore
 
 
 def never_ever_call_me():
@@ -13,7 +13,7 @@ def never_ever_call_me():
 
 
 # сигма среднего. Вводные данные: массив случайной величины и приборная погрешность
-def sigma(array, t, device, show_sigma = False, show_sudden = False):
+def sigma(array: list[float], t: float, device: float, show_sigma: bool = False, show_sudden: bool = False) -> float:
     s = 0
     n = len(array)
     avr = sum(array) / n
@@ -32,7 +32,7 @@ def sigma(array, t, device, show_sigma = False, show_sudden = False):
 # (по которым не интегрируют, строка из символов через пробел),
 # переменные (строка из символов через пробел),
 # абсолютные погрешности (массив), их значения (сначала переменных затем констант массив).
-def indirect_error(function, const, variable, abs_error, args):
+def indirect_error(function: str, const: str, variable: str, abs_error: list[float], args: list[float]) -> tuple[float, float]:
     row = list(map(Symbol, variable.split(" ")))
     if const != 'missing':
         consts = list(map(Symbol, const.split(" ")))
