@@ -49,3 +49,4 @@ def indirect_error(function: str, const: str, variable: str, abs_error: list[flo
         params[time_array[j]] = args[j]
     ans = (sympy_function.evalf(20, subs=params), s.evalf(20, subs=params))
     return ans
+print(indirect_error('(x * d) * I ** (-1)', 'd', 'x I', [0.00014, 0.001], [-0.1472, 0.018, 0.001]))
